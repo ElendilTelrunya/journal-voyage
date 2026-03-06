@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html>
-
 <head>
 <title>Terra Memoria</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -104,6 +103,7 @@ button{
 
 <body>
 
+<!-- LOGIN -->
 <div class="login" id="login">
     <h2>Entrer le mot de passe</h2>
     <input type="password" id="password">
@@ -111,6 +111,7 @@ button{
     <button onclick="checkPassword()">Entrer</button>
 </div>
 
+<!-- SITE -->
 <div id="site">
 
     <div class="header">
@@ -126,7 +127,7 @@ button{
 
     <h2 id="voyages">Nos voyages</h2>
     <div class="gallery" id="gallery">
-        <!-- Photos initiales -->
+        <!-- Photos initiales, tu peux les ajouter ici -->
     </div>
 
     <h2 id="carte">Carte du monde</h2>
@@ -137,7 +138,9 @@ button{
     <div id="city-form">
         <h3>Ajouter une ville ou région</h3>
         <input type="text" id="city-input" placeholder="Nom de la ville">
-        <select id="country-select"></select>
+        <select id="country-select">
+            <!-- Pays ajoutés dynamiquement -->
+        </select>
         <button onclick="addCity()">Ajouter</button>
         <div id="city-list"></div>
     </div>
@@ -145,12 +148,13 @@ button{
 </div>
 
 <script>
-let countries = {}; // { nomDuPays: {x, y, villes: []} }
+let countries = {}; // {nomPays: {x, y, villes: []}}
 let currentCountry = null;
 
+// Mot de passe
 function checkPassword(){
     const password = document.getElementById("password").value;
-    if(password=="Cybelle-1"){
+    if(password==="Cybelle-1"){
         document.getElementById("login").style.display="none";
         document.getElementById("site").style.display="block";
         loadData();
@@ -160,7 +164,7 @@ function checkPassword(){
     }
 }
 
-// Ajouter un point en cliquant
+// Cliquer sur la carte pour créer un pays
 document.getElementById('map').addEventListener('click', function(e){
     const map = e.target;
     const rect = map.getBoundingClientRect();
@@ -170,7 +174,7 @@ document.getElementById('map').addEventListener('click', function(e){
     const countryName = prompt("Nom du pays à ajouter ?");
     if(!countryName) return;
 
-    // Ajouter dans countries
+    // Si le pays existe déjà, ne rien faire
     if(!countries[countryName]){
         countries[countryName] = {x: x, y: y, villes: []};
     }
@@ -180,12 +184,10 @@ document.getElementById('map').addEventListener('click', function(e){
     saveData();
 });
 
-// Crée un point rouge sur la carte
+// Créer un point sur la carte
 function renderPoint(countryName){
     const mapContainer = document.getElementById('map-container');
-    // Vérifie si le point existe déjà
     if(document.querySelector(`.map-point[data-country="${countryName}"]`)) return;
-
     const point = document.createElement('div');
     point.className = 'map-point';
     point.style.left = countries[countryName].x + '%';
@@ -195,7 +197,68 @@ function renderPoint(countryName){
     mapContainer.appendChild(point);
 }
 
-// Afficher pays
+// Afficher pays et ses villes
 function showCountry(country){
     currentCountry = country;
     displayCities(country);
+
+    // Filtrer photos si elles existent
+    const images = document.querySelectorAll('#gallery img');
+    images.forEach(img => {
+        if(img.classList.contains(country)) img.style.display='block';
+        else img.style.display='none';
+    });
+}
+
+// Ajouter ville
+function addCity(){
+    const cityInput = document.getElementById('city-input').value.trim();
+    if(!cityInput || !currentCountry) return;
+    countries[currentCountry].villes.push(cityInput);
+    document.getElementById('city-input').value='';
+    displayCities(currentCountry);
+    saveData();
+}
+
+// Afficher villes
+function displayCities(country){
+    const cityListDiv = document.getElementById('city-list');
+    const cityArray = countries[country].villes || [];
+    let html = `<h4>Villes / Régions visités : ${country}</h4><ul>`;
+    cityArray.forEach(c => html += `<li>${c}</li>`);
+    html += '</ul>';
+    cityListDiv.innerHTML = html;
+}
+
+// Mettre à jour le select des pays
+function updateCountrySelect(){
+    const select = document.getElementById('country-select');
+    select.innerHTML='';
+    Object.keys(countries).forEach(c => {
+        const option = document.createElement('option');
+        option.value = c;
+        option.innerText = c;
+        select.appendChild(option);
+    });
+}
+
+// Sauvegarder localStorage
+function saveData(){
+    localStorage.setItem('terraMemoriaData', JSON.stringify(countries));
+}
+
+// Charger depuis localStorage
+function loadData(){
+    const data = JSON.parse(localStorage.getItem('terraMemoriaData'));
+    if(data) countries = data;
+}
+
+// Afficher tous les points existants
+function renderAllPoints(){
+    Object.keys(countries).forEach(c => renderPoint(c));
+    updateCountrySelect();
+}
+</script>
+
+</body>
+</html>
