@@ -100,7 +100,6 @@ button{
     display:inline-block;
 }
 </style>
-
 </head>
 
 <body>
@@ -129,18 +128,12 @@ button{
 
     <h2 id="voyages">Nos voyages</h2>
     <div class="gallery" id="gallery">
-        <img src="japon1.jpg" class="japon">
-        <img src="japon2.jpg" class="japon">
-        <img src="japon3.jpg" class="japon">
-        <img src="italie1.jpg" class="italie">
-        <img src="italie2.jpg" class="italie">
+        <!-- Photos initiales -->
     </div>
 
     <h2 id="carte">Carte du monde</h2>
-    <div class="map-container">
-        <img src="carte-monde.jpg" alt="Carte du monde">
-        <div class="map-point" style="top:35%; left:75%;" onclick="showCountry('japon')"></div>
-        <div class="map-point" style="top:50%; left:85%;" onclick="showCountry('italie')"></div>
+    <div class="map-container" id="map-container">
+        <img src="carte-monde.jpg" alt="Carte du monde" id="map">
     </div>
 
     <!-- Formulaire ajout villes/régions -->
@@ -148,8 +141,7 @@ button{
         <h3>Ajouter une ville ou région</h3>
         <input type="text" id="city-input" placeholder="Nom de la ville">
         <select id="country-select">
-            <option value="japon">Japon</option>
-            <option value="italie">Italie</option>
+            <!-- Les pays seront ajoutés dynamiquement -->
         </select>
         <button onclick="addCity()">Ajouter</button>
         <div id="city-list"></div>
@@ -158,19 +150,48 @@ button{
 </div>
 
 <script>
+let countries = {}; // Stocke les pays et villes dans localStorage
+let currentCountry = null;
+
+// Mot de passe
 function checkPassword(){
     var password=document.getElementById("password").value;
     if(password=="Cybelle-1"){
         document.getElementById("login").style.display="none";
         document.getElementById("site").style.display="block";
-        loadCities();
+        loadData();
     } else {
         alert("Mot de passe incorrect");
     }
 }
 
-// Afficher uniquement les photos d'un pays
+// Ajouter un point sur la carte en cliquant
+document.getElementById('map').addEventListener('click', function(e){
+    const map = e.target;
+    const rect = map.getBoundingClientRect();
+    const x = ((e.clientX - rect.left)/map.width)*100;
+    const y = ((e.clientY - rect.top)/map.height)*100;
+
+    const countryName = prompt("Nom du pays à ajouter ?");
+    if(!countryName) return;
+
+    // Créer le point
+    const point = document.createElement('div');
+    point.className = 'map-point';
+    point.style.left = x + '%';
+    point.style.top = y + '%';
+    point.onclick = () => showCountry(countryName);
+    document.getElementById('map-container').appendChild(point);
+
+    // Ajouter pays dans données
+    if(!countries[countryName]) countries[countryName]=[];
+    updateCountrySelect();
+    saveData();
+});
+
+// Afficher photos et villes d’un pays
 function showCountry(country){
+    currentCountry = country;
     const images = document.querySelectorAll('#gallery img');
     images.forEach(img => {
         if(img.classList.contains(country)){
@@ -182,37 +203,49 @@ function showCountry(country){
     displayCities(country);
 }
 
-// Ajouter ville/région dans localStorage
+// Ajouter ville/région
 function addCity(){
     const cityInput = document.getElementById('city-input').value.trim();
-    const country = document.getElementById('country-select').value;
-    if(cityInput==='') return;
-    let cities = JSON.parse(localStorage.getItem(country)) || [];
-    cities.push(cityInput);
-    localStorage.setItem(country, JSON.stringify(cities));
+    if(!cityInput || !currentCountry) return;
+    countries[currentCountry].push(cityInput);
     document.getElementById('city-input').value='';
-    if(currentCountry===country) displayCities(country);
+    displayCities(currentCountry);
+    saveData();
 }
 
-let currentCountry = null;
-
-// Afficher villes pour le pays sélectionné
+// Afficher les villes d’un pays
 function displayCities(country){
-    currentCountry = country;
     const cityListDiv = document.getElementById('city-list');
-    let cities = JSON.parse(localStorage.getItem(country)) || [];
+    const cityArray = countries[country] || [];
     let html = `<h4>Villes / Régions visités : ${country}</h4><ul>`;
-    cities.forEach(c => html += `<li>${c}</li>`);
+    cityArray.forEach(c => html += `<li>${c}</li>`);
     html += '</ul>';
     cityListDiv.innerHTML = html;
 }
 
-// Charger toutes les villes au chargement
-function loadCities(){
-    const countries = ['japon','italie'];
-    countries.forEach(c => {
-        if(!localStorage.getItem(c)) localStorage.setItem(c, JSON.stringify([]));
+// Mettre à jour le select de pays
+function updateCountrySelect(){
+    const select = document.getElementById('country-select');
+    select.innerHTML='';
+    Object.keys(countries).forEach(c => {
+        const option = document.createElement('option');
+        option.value = c;
+        option.innerText = c;
+        select.appendChild(option);
     });
+}
+
+// Sauvegarder dans le navigateur
+function saveData(){
+    localStorage.setItem('terraMemoriaData', JSON.stringify(countries));
+}
+
+// Charger depuis localStorage
+function loadData(){
+    const data = JSON.parse(localStorage.getItem('terraMemoriaData'));
+    if(data) countries = data;
+    // Ajouter points existants
+    Object.keys(countries).forEach(c => updateCountrySelect());
 }
 </script>
 
