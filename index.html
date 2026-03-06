@@ -3,7 +3,8 @@
 <head>
 <title>Terra Memoria</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-
+<!-- Leaflet CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <style>
 body{
     font-family: Arial;
@@ -68,25 +69,11 @@ button{
     border-radius:10px;
 }
 
-.map-container{
-    position:relative;
-    max-width:800px;
+#map{
+    height:500px;
     margin:20px auto;
-}
-
-.map-container img{
-    width:100%;
+    max-width:800px;
     border-radius:10px;
-}
-
-.map-point{
-    position:absolute;
-    width:20px;
-    height:20px;
-    background:red;
-    border-radius:50%;
-    cursor:pointer;
-    border:2px solid white;
 }
 
 #city-form{
@@ -100,7 +87,6 @@ button{
 }
 </style>
 </head>
-
 <body>
 
 <!-- LOGIN -->
@@ -127,13 +113,11 @@ button{
 
     <h2 id="voyages">Nos voyages</h2>
     <div class="gallery" id="gallery">
-        <!-- Photos initiales, tu peux les ajouter ici -->
+        <!-- Photos initiales -->
     </div>
 
-    <h2 id="carte">Carte du monde</h2>
-    <div class="map-container" id="map-container">
-        <img src="carte-monde.jpg" alt="Carte du monde" id="map">
-    </div>
+    <h2 id="carte">Carte interactive</h2>
+    <div id="map"></div>
 
     <div id="city-form">
         <h3>Ajouter une ville ou région</h3>
@@ -147,62 +131,63 @@ button{
 
 </div>
 
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script>
-let countries = {}; // {nomPays: {x, y, villes: []}}
+let countries = {}; // {nomPays: {lat, lng, villes: []}}
 let currentCountry = null;
+let map;
+let markers = {}; // pour garder les markers Leaflet
 
-// Mot de passe
 function checkPassword(){
     const password = document.getElementById("password").value;
     if(password==="Cybelle-1"){
         document.getElementById("login").style.display="none";
         document.getElementById("site").style.display="block";
+        initMap();
         loadData();
-        renderAllPoints();
+        renderAllMarkers();
     } else {
         alert("Mot de passe incorrect");
     }
 }
 
-// Cliquer sur la carte pour créer un pays
-document.getElementById('map').addEventListener('click', function(e){
-    const map = e.target;
-    const rect = map.getBoundingClientRect();
-    const x = ((e.clientX - rect.left)/map.width)*100;
-    const y = ((e.clientY - rect.top)/map.height)*100;
+// Initialiser la carte Leaflet
+function initMap(){
+    map = L.map('map').setView([20,0], 2); // vue monde entier
 
-    const countryName = prompt("Nom du pays à ajouter ?");
-    if(!countryName) return;
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+    }).addTo(map);
 
-    // Si le pays existe déjà, ne rien faire
-    if(!countries[countryName]){
-        countries[countryName] = {x: x, y: y, villes: []};
-    }
+    // Ajouter un pays en cliquant
+    map.on('click', function(e){
+        const countryName = prompt("Nom du pays à ajouter ?");
+        if(!countryName) return;
 
-    renderPoint(countryName);
-    updateCountrySelect();
-    saveData();
-});
-
-// Créer un point sur la carte
-function renderPoint(countryName){
-    const mapContainer = document.getElementById('map-container');
-    if(document.querySelector(`.map-point[data-country="${countryName}"]`)) return;
-    const point = document.createElement('div');
-    point.className = 'map-point';
-    point.style.left = countries[countryName].x + '%';
-    point.style.top = countries[countryName].y + '%';
-    point.dataset.country = countryName;
-    point.onclick = () => showCountry(countryName);
-    mapContainer.appendChild(point);
+        if(!countries[countryName]){
+            countries[countryName] = {lat:e.latlng.lat, lng:e.latlng.lng, villes:[]};
+        }
+        renderMarker(countryName);
+        updateCountrySelect();
+        saveData();
+    });
 }
 
-// Afficher pays et ses villes
+// Créer un marker pour un pays
+function renderMarker(countryName){
+    if(markers[countryName]) return;
+    const country = countries[countryName];
+    const marker = L.marker([country.lat, country.lng]).addTo(map)
+        .bindPopup(countryName)
+        .on('click', () => showCountry(countryName));
+    markers[countryName] = marker;
+}
+
+// Afficher villes et photos
 function showCountry(country){
     currentCountry = country;
     displayCities(country);
-
-    // Filtrer photos si elles existent
     const images = document.querySelectorAll('#gallery img');
     images.forEach(img => {
         if(img.classList.contains(country)) img.style.display='block';
@@ -253,9 +238,9 @@ function loadData(){
     if(data) countries = data;
 }
 
-// Afficher tous les points existants
-function renderAllPoints(){
-    Object.keys(countries).forEach(c => renderPoint(c));
+// Afficher tous les markers existants
+function renderAllMarkers(){
+    Object.keys(countries).forEach(c => renderMarker(c));
     updateCountrySelect();
 }
 </script>
