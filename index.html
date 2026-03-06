@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Terra Memoria</title>
+<title>Terra Memoria 2.0</title>
 
 <!-- Leaflet CSS -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
@@ -14,9 +14,7 @@ header {
   background: url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1500&q=80') no-repeat center center/cover;
   color:white; padding:60px 20px; text-align:center; position: relative;
 }
-header div {
-  background-color: rgba(0,0,0,0.4); padding:20px; border-radius:10px; display:inline-block;
-}
+header div { background-color: rgba(0,0,0,0.4); padding:20px; border-radius:10px; display:inline-block; }
 header h1 { margin:0; font-size:2.5rem; letter-spacing:1px; }
 
 nav { background:#1565c0; position: sticky; top:0; z-index:1000; }
@@ -34,14 +32,18 @@ nav a:hover { background-color:#0d47a1; }
 #journal { display:flex; flex-wrap:wrap; gap:20px; }
 .country-album { margin-bottom:30px; }
 .country-album h3 { margin-bottom:10px; border-bottom:2px solid #1e88e5; padding-bottom:5px; }
+.city-album h4 { margin:5px 0; font-weight:bold; }
 .photo { background:white; padding:10px; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.15); width:200px; text-align:center; transition: transform 0.2s; }
 .photo:hover { transform: scale(1.05); }
 .photo img { max-width:100%; border-radius:5px; }
 .photo button { margin-top:5px; padding:5px; cursor:pointer; border:none; border-radius:5px; background:#e53935; color:white; }
 
 #map { height:500px; margin-top:20px; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.15);}
-#add-photo { margin-bottom:20px; }
-#add-photo select, #add-photo input, #add-photo button { width:100%; padding:8px; margin-bottom:5px; border-radius:5px; border:1px solid #ccc; }
+form { margin-bottom:20px; }
+form input, form select, form button { width:100%; padding:8px; margin-bottom:5px; border-radius:5px; border:1px solid #ccc; }
+form button { background:#1e88e5; color:white; border:none; cursor:pointer; }
+form button:hover { background:#1565c0; }
+
 #visited-count { margin-top:10px; font-weight:bold; color:#1e88e5; }
 </style>
 </head>
@@ -69,22 +71,43 @@ nav a:hover { background-color:#0d47a1; }
     </ul>
   </nav>
 
+  <!-- Section ajout pays et ville -->
+  <section>
+    <h2>Ajouter un pays / ville</h2>
+    <form id="add-country-form">
+      <input type="text" id="new-country" placeholder="Nom du pays" required>
+      <input type="text" id="country-lat" placeholder="Latitude (ex: 48.8566)" required>
+      <input type="text" id="country-lng" placeholder="Longitude (ex: 2.3522)" required>
+      <button type="submit">Ajouter le pays</button>
+    </form>
+
+    <form id="add-city-form">
+      <select id="country-select">
+        <option value="" disabled selected>Choisir un pays</option>
+      </select>
+      <input type="text" id="new-city" placeholder="Nom de la ville / région" required>
+      <button type="submit">Ajouter la ville</button>
+    </form>
+  </section>
+
+  <!-- Section journal -->
   <section id="journal-section">
     <h2>Journal de voyage</h2>
-    <div id="add-photo">
+    <form id="add-photo-form">
       <select id="photo-country">
         <option value="" disabled selected>Pays</option>
-        <option value="Japon">Japon</option>
-        <option value="France">France</option>
-        <option value="USA">USA</option>
       </select>
-      <input type="text" id="photo-title" placeholder="Titre de la photo">
-      <input type="file" id="photo-file" accept="image/*">
-      <button onclick="addPhoto()">Ajouter</button>
-    </div>
+      <select id="photo-city">
+        <option value="" disabled selected>Ville / Région</option>
+      </select>
+      <input type="text" id="photo-title" placeholder="Titre de la photo" required>
+      <input type="file" id="photo-file" accept="image/*" required>
+      <button type="submit">Ajouter la photo</button>
+    </form>
     <div id="journal"></div>
   </section>
 
+  <!-- Section carte -->
   <section id="map-section">
     <h2>Carte des voyages</h2>
     <div id="map"></div>
@@ -94,126 +117,171 @@ nav a:hover { background-color:#0d47a1; }
 
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script>
-// --- Mot de passe ---
+// === Mot de passe ===
 function checkPassword() {
     const password = document.getElementById('password').value;
     const error = document.getElementById('error');
     if(password === "Cybelle-1") {
         document.getElementById('login-form').style.display = 'none';
         document.getElementById('main-content').style.display = 'block';
-        setTimeout(()=>{ map.invalidateSize(); loadVisited(); }, 200); // permet à la carte de s'afficher correctement
-        loadPhotos();
+        setTimeout(()=>{ map.invalidateSize(); loadVisited(); updateCountrySelect(); displayPhotos(); }, 200);
     } else {
         error.textContent = "Mot de passe incorrect !";
     }
 }
 
-// --- Journal photos avec upload et suppression ---
-function addPhoto() {
-    const country = document.getElementById('photo-country').value;
-    const title = document.getElementById('photo-title').value;
-    const fileInput = document.getElementById('photo-file');
-    if(!country || !title || fileInput.files.length===0) return;
-
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        const imgData = e.target.result;
-        let photos = JSON.parse(localStorage.getItem('photos') || '{}');
-        if(!photos[country]) photos[country] = [];
-        photos[country].push({title, imgData});
-        localStorage.setItem('photos', JSON.stringify(photos));
-        displayPhotos();
-        document.getElementById('photo-title').value = '';
-        document.getElementById('photo-file').value = '';
-        document.getElementById('photo-country').value = '';
-    }
-    reader.readAsDataURL(fileInput.files[0]);
-}
-
-function displayPhotos() {
-    const journal = document.getElementById('journal');
-    journal.innerHTML = '';
-    const photos = JSON.parse(localStorage.getItem('photos') || '{}');
-    for(let country in photos) {
-        const div = document.createElement('div');
-        div.className = 'country-album';
-        div.innerHTML = `<h3>${country}</h3>`;
-        photos[country].forEach((p, index) => {
-            const photoDiv = document.createElement('div');
-            photoDiv.className = 'photo';
-            photoDiv.innerHTML = `
-                <h4>${p.title}</h4>
-                <img src="${p.imgData}" alt="${p.title}">
-                <button onclick="deletePhoto('${country}', ${index})">🗑️ Supprimer</button>
-            `;
-            div.appendChild(photoDiv);
-        });
-        journal.appendChild(div);
-    }
-}
-
-function deletePhoto(country, index) {
-    let photos = JSON.parse(localStorage.getItem('photos') || '{}');
-    photos[country].splice(index, 1);
-    if(photos[country].length === 0) delete photos[country];
-    localStorage.setItem('photos', JSON.stringify(photos));
-    displayPhotos();
-}
-
-function loadPhotos() { displayPhotos(); }
-
-// --- Carte interactive Leaflet ---
-const map = L.map('map').setView([48.8566, 2.3522], 2);
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution:'© OpenStreetMap' }).addTo(map);
-
-const places = [
-    {name:"Tokyo", coords:[35.6895,139.6917], country:"Japon"},
-    {name:"Kyoto", coords:[35.0116,135.7681], country:"Japon"},
-    {name:"Osaka", coords:[34.6937,135.5022], country:"Japon"},
-    {name:"Paris", coords:[48.8566,2.3522], country:"France"},
-    {name:"New York", coords:[40.7128,-74.0060], country:"USA"}
-];
-
+// === Storage ===
+let data = JSON.parse(localStorage.getItem('terraMemoria') || '{}');
 let visited = JSON.parse(localStorage.getItem('visited') || '{}');
 
-function updateVisitedCount() {
-    const count = Object.values(visited).filter(v => v).length;
-    document.getElementById('visited-count').textContent = `Pays visités : ${count}`;
-}
+// === Carte Leaflet ===
+const map = L.map('map').setView([48.8566, 2.3522], 2);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution:'© OpenStreetMap' }).addTo(map);
+let markers = {};
 
-places.forEach(place => {
-    const icon = L.icon({
-        iconUrl: visited[place.country] ? 'https://cdn-icons-png.flaticon.com/512/190/190411.png' : 'https://cdn-icons-png.flaticon.com/512/190/190406.png',
-        iconSize: [30, 30]
-    });
-    const marker = L.marker(place.coords, {icon}).addTo(map);
-    marker.bindPopup(`<input type="checkbox" onchange="toggleVisited(this,'${place.country}')" ${visited[place.country]?'checked':''}> ${place.name}`);
-    place.marker = marker;
-});
+function updateMap() {
+    Object.values(markers).forEach(m => map.removeLayer(m));
+    markers = {};
+    for (const country in data) {
+        const {lat, lng} = data[country];
+        const iconUrl = visited[country] ? 'https://cdn-icons-png.flaticon.com/512/190/190411.png' : 'https://cdn-icons-png.flaticon.com/512/190/190406.png';
+        const icon = L.icon({iconUrl, iconSize:[30,30]});
+        const marker = L.marker([lat, lng], {icon}).addTo(map);
+        marker.bindPopup(`<input type="checkbox" onchange="toggleVisited(this,'${country}')" ${visited[country]?'checked':''}> ${country}`);
+        markers[country] = marker;
+    }
+    updateVisitedCount();
+}
 
 function toggleVisited(checkbox, country) {
     visited[country] = checkbox.checked;
     localStorage.setItem('visited', JSON.stringify(visited));
-    places.filter(p=>p.country===country).forEach(p=>{
-        const iconUrl = visited[country] ? 'https://cdn-icons-png.flaticon.com/512/190/190411.png' : 'https://cdn-icons-png.flaticon.com/512/190/190406.png';
-        p.marker.setIcon(L.icon({iconUrl, iconSize:[30,30]}));
-    });
-    updateVisitedCount();
+    updateMap();
 }
 
 function loadVisited() {
-    updateVisitedCount();
-    map.eachLayer(layer => {
-        if(layer.getPopup){
-            const popup = layer.getPopup();
-            if(popup){
-                const content = popup.getContent();
-                const country = content.replace(/<input[^>]*>/,'').trim();
-                const checked = visited[country]? 'checked' : '';
-                layer.setPopupContent(`<input type="checkbox" onchange="toggleVisited(this,'${country}')" ${checked}> ${country}`);
-            }
+    updateMap();
+}
+
+// === Ajouter pays ===
+document.getElementById('add-country-form').addEventListener('submit', e=>{
+    e.preventDefault();
+    const country = document.getElementById('new-country').value.trim();
+    const lat = parseFloat(document.getElementById('country-lat').value);
+    const lng = parseFloat(document.getElementById('country-lng').value);
+    if(!country || isNaN(lat) || isNaN(lng)) return alert("Infos invalides");
+    if(!data[country]) data[country] = {lat, lng, cities:{}};
+    localStorage.setItem('terraMemoria', JSON.stringify(data));
+    document.getElementById('new-country').value='';
+    document.getElementById('country-lat').value='';
+    document.getElementById('country-lng').value='';
+    updateCountrySelect();
+    updateMap();
+});
+
+// === Ajouter ville ===
+document.getElementById('add-city-form').addEventListener('submit', e=>{
+    e.preventDefault();
+    const country = document.getElementById('country-select').value;
+    const city = document.getElementById('new-city').value.trim();
+    if(!country || !city) return;
+    if(!data[country].cities[city]) data[country].cities[city] = [];
+    localStorage.setItem('terraMemoria', JSON.stringify(data));
+    document.getElementById('new-city').value='';
+    updatePhotoCitySelect();
+    displayPhotos();
+});
+
+// === Ajouter photo ===
+document.getElementById('add-photo-form').addEventListener('submit', e=>{
+    e.preventDefault();
+    const country = document.getElementById('photo-country').value;
+    const city = document.getElementById('photo-city').value;
+    const title = document.getElementById('photo-title').value.trim();
+    const fileInput = document.getElementById('photo-file');
+    if(!country || !city || !title || fileInput.files.length===0) return;
+    const reader = new FileReader();
+    reader.onload = e2=>{
+        const imgData = e2.target.result;
+        data[country].cities[city].push({title,imgData});
+        localStorage.setItem('terraMemoria', JSON.stringify(data));
+        displayPhotos();
+        document.getElementById('photo-title').value='';
+        fileInput.value='';
+    };
+    reader.readAsDataURL(fileInput.files[0]);
+});
+
+// === Affichage photos ===
+function displayPhotos() {
+    const journal = document.getElementById('journal');
+    journal.innerHTML='';
+    for(const country in data){
+        const divCountry = document.createElement('div');
+        divCountry.className='country-album';
+        divCountry.innerHTML=`<h3>${country}</h3>`;
+        for(const city in data[country].cities){
+            const cityDiv = document.createElement('div');
+            cityDiv.className='city-album';
+            cityDiv.innerHTML=`<h4>${city}</h4>`;
+            data[country].cities[city].forEach((p,index)=>{
+                const photoDiv = document.createElement('div');
+                photoDiv.className='photo';
+                photoDiv.innerHTML=`
+                    <h5>${p.title}</h5>
+                    <img src="${p.imgData}" alt="${p.title}">
+                    <button onclick="deletePhoto('${country}','${city}',${index})">🗑️ Supprimer</button>
+                `;
+                cityDiv.appendChild(photoDiv);
+            });
+            divCountry.appendChild(cityDiv);
         }
-    });
+        journal.appendChild(divCountry);
+    }
+}
+
+// === Supprimer photo ===
+function deletePhoto(country, city, index){
+    data[country].cities[city].splice(index,1);
+    if(data[country].cities[city].length===0) delete data[country].cities[city];
+    if(Object.keys(data[country].cities).length===0) delete data[country];
+    localStorage.setItem('terraMemoria', JSON.stringify(data));
+    updateCountrySelect();
+    updatePhotoCitySelect();
+    updateMap();
+    displayPhotos();
+}
+
+// === Select pays pour ajouter ville & photo ===
+function updateCountrySelect(){
+    const sel1 = document.getElementById('country-select');
+    const sel2 = document.getElementById('photo-country');
+    sel1.innerHTML='<option value="" disabled selected>Choisir un pays</option>';
+    sel2.innerHTML='<option value="" disabled selected>Pays</option>';
+    for(const country in data){
+        const opt1=document.createElement('option'); opt1.value=country; opt1.textContent=country; sel1.appendChild(opt1);
+        const opt2=document.createElement('option'); opt2.value=country; opt2.textContent=country; sel2.appendChild(opt2);
+    }
+    updatePhotoCitySelect();
+}
+
+document.getElementById('photo-country').addEventListener('change', updatePhotoCitySelect);
+
+function updatePhotoCitySelect(){
+    const country = document.getElementById('photo-country').value;
+    const sel = document.getElementById('photo-city');
+    sel.innerHTML='<option value="" disabled selected>Ville / Région</option>';
+    if(country && data[country]){
+        for(const city in data[country].cities){
+            const opt=document.createElement('option'); opt.value=city; opt.textContent=city; sel.appendChild(opt);
+        }
+    }
+}
+
+// === Visited count ===
+function updateVisitedCount(){
+    const count = Object.values(visited).filter(v=>v).length;
+    document.getElementById('visited-count').textContent = `Pays visités : ${count}`;
 }
 </script>
 </body>
