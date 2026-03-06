@@ -7,66 +7,65 @@
 
 <style>
 body{
-font-family: Arial;
-text-align:center;
-background:#f4f4f4;
-margin:0;
+    font-family: Arial;
+    text-align:center;
+    background:#f4f4f4;
+    margin:0;
 }
 
 .login{
-margin-top:150px;
+    margin-top:150px;
 }
 
 input{
-padding:10px;
-font-size:16px;
-
+    padding:10px;
+    font-size:16px;
+}
 
 button{
-padding:10px 20px;
-font-size:16px;
-cursor:pointer;
+    padding:10px 20px;
+    font-size:16px;
+    cursor:pointer;
 }
 
 #site{
-display:none;
+    display:none;
 }
 
 .header{
-background:black;
-color:white;
-padding:40px;
+    background:black;
+    color:white;
+    padding:40px;
 }
 
-/* --- MENU --- */
+/* --- MENU --- /
 .menu{
-margin-top:20px;
+    margin-top:20px;
 }
- 
+
 .menu a{
-color:white;
-margin:15px;
-text-decoration:none;
-font-size:18px;
+    color:white;
+    margin:15px;
+    text-decoration:none;
+    font-size:18px;
 }
 
 .menu a:hover{
-text-decoration:underline;
+    text-decoration:underline;
 }
 
-/* --- GALERIE --- */
+/ --- GALERIE --- */
 .gallery{
-display:grid;
-grid-template-columns:repeat(auto-fit, minmax(250px,1fr));
-gap:20px;
-padding:20px;
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(250px,1fr));
+    gap:20px;
+    padding:20px;
 }
 
 .gallery img{
-width:100%;
-border-radius:10px;
+    width:100%;
+    border-radius:10px;
 }
-
 </style>
 
 </head>
@@ -75,48 +74,19 @@ border-radius:10px;
 
 <!-- LOGIN -->
 <div class="login" id="login">
-<h2>Entrer le mot de passe</h2>
-<input type="password" id="password">
-<br><br>
-<button onclick="checkPassword()">Entrer</button>
+    <h2>Entrer le mot de passe</h2>
+    <input type="password" id="password">
+    <br><br>
+    <button onclick="checkPassword()">Entrer</button>
 </div>
 
 <!-- SITE -->
 <div id="site">
 
-<!-- HEADER + MENU -->
-<div class="header">
-<h1>Terra Memoria</h1>
-<p>Le journal de voyage de Clément ❤️</p>
-<div class="menu">
-<a href="#">Accueil</a>
-<a href="#">Nos voyages</a>
-<a href="#">Photos</a>
-<a href="#">Carte</a>
-</div>
-</div>
-
-<!-- GALERIE -->
-<h2>Nos voyages</h2>
-<div class="gallery">
-<img src="japon1.jpg">
-<img src="japon2.jpg">
-<img src="japon3.jpg">
-</div>
-
-</div>
-
-<script>
-function checkPassword(){
-var password=document.getElementById("password").value;
-if(password=="Cybelle-1"){
-document.getElementById("login").style.display="none";
-document.getElementById("site").style.display="block";
-} else {
-alert("Mot de passe incorrect");
-}
-}
-</script>
-
-</body>
-</html>
+    <!-- HEADER + MENU -->
+    <div class="header">
+        <h1>Terra Memoria</h1>
+        <p>Le journal de voyage de Clément </p>
+        <div class="menu">
+            <a href="#">Accueil</a>
+            <a href="#">
