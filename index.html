@@ -4,16 +4,27 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Terra Memoria</title>
+
+<!-- Leaflet CSS -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+
 <style>
-body { font-family: Arial, sans-serif; margin:0; background:#f0f0f0; color:#333; scroll-behavior: smooth;}
-header { background:#1e88e5; color:white; padding:30px 20px; text-align:center; box-shadow: 0 4px 6px rgba(0,0,0,0.2);}
-header h1 { margin:0; font-size:2rem; letter-spacing:1px; }
+body { font-family: Arial, sans-serif; margin:0; background:#f0f0f0; color:#333; scroll-behavior: smooth; }
+header {
+  background: url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1500&q=80') no-repeat center center/cover;
+  color:white; padding:60px 20px; text-align:center; position: relative;
+}
+header div {
+  background-color: rgba(0,0,0,0.4); padding:20px; border-radius:10px; display:inline-block;
+}
+header h1 { margin:0; font-size:2.5rem; letter-spacing:1px; }
+
 nav { background:#1565c0; position: sticky; top:0; z-index:1000; }
 nav ul { margin:0; padding:0; display:flex; list-style:none; justify-content:center; }
 nav li { margin:0; }
 nav a { display:block; padding:15px 25px; text-decoration:none; color:white; font-weight:bold; transition: background 0.3s; }
 nav a:hover { background-color:#0d47a1; }
+
 .content { padding:20px; }
 #login-form { max-width:300px; margin:50px auto; background:white; padding:20px; border-radius:10px; box-shadow:0 4px 10px rgba(0,0,0,0.2); text-align:center; }
 #login-form input[type="password"] { width:80%; padding:10px; margin-bottom:10px; border-radius:5px; border:1px solid #ccc;}
@@ -22,10 +33,11 @@ nav a:hover { background-color:#0d47a1; }
 
 #journal { display:flex; flex-wrap:wrap; gap:20px; }
 .country-album { margin-bottom:30px; }
-.country-album h3 { margin-bottom:10px; border-bottom:2px solid #1e88e5; padding-bottom:5px;}
+.country-album h3 { margin-bottom:10px; border-bottom:2px solid #1e88e5; padding-bottom:5px; }
 .photo { background:white; padding:10px; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.15); width:200px; text-align:center; transition: transform 0.2s; }
-.photo:hover { transform: scale(1.05);}
+.photo:hover { transform: scale(1.05); }
 .photo img { max-width:100%; border-radius:5px; }
+.photo button { margin-top:5px; padding:5px; cursor:pointer; border:none; border-radius:5px; background:#e53935; color:white; }
 
 #map { height:500px; margin-top:20px; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.15);}
 #add-photo { margin-bottom:20px; }
@@ -36,46 +48,48 @@ nav a:hover { background-color:#0d47a1; }
 <body>
 
 <header>
-<h1>Terra Memoria</h1>
+  <div>
+    <h1>Terra Memoria</h1>
+  </div>
 </header>
 
 <div id="login-form">
-<h2>Connexion</h2>
-<input type="password" id="password" placeholder="Mot de passe">
-<br>
-<button onclick="checkPassword()">Se connecter</button>
-<p id="error" style="color:red;"></p>
+  <h2>Connexion</h2>
+  <input type="password" id="password" placeholder="Mot de passe">
+  <br>
+  <button onclick="checkPassword()">Se connecter</button>
+  <p id="error" style="color:red;"></p>
 </div>
 
 <div class="content" id="main-content" style="display:none;">
-<nav>
-<ul>
-<li><a href="#journal-section">Journal</a></li>
-<li><a href="#map-section">Carte</a></li>
-</ul>
-</nav>
+  <nav>
+    <ul>
+      <li><a href="#journal-section">Journal</a></li>
+      <li><a href="#map-section">Carte</a></li>
+    </ul>
+  </nav>
 
-<section id="journal-section">
-<h2>Journal de voyage</h2>
-<div id="add-photo">
-<select id="photo-country">
-<option value="" disabled selected>Pays</option>
-<option value="Japon">Japon</option>
-<option value="France">France</option>
-<option value="USA">USA</option>
-</select>
-<input type="text" id="photo-title" placeholder="Titre de la photo">
-<input type="file" id="photo-file" accept="image/*">
-<button onclick="addPhoto()">Ajouter</button>
-</div>
-<div id="journal"></div>
-</section>
+  <section id="journal-section">
+    <h2>Journal de voyage</h2>
+    <div id="add-photo">
+      <select id="photo-country">
+        <option value="" disabled selected>Pays</option>
+        <option value="Japon">Japon</option>
+        <option value="France">France</option>
+        <option value="USA">USA</option>
+      </select>
+      <input type="text" id="photo-title" placeholder="Titre de la photo">
+      <input type="file" id="photo-file" accept="image/*">
+      <button onclick="addPhoto()">Ajouter</button>
+    </div>
+    <div id="journal"></div>
+  </section>
 
-<section id="map-section">
-<h2>Carte des voyages</h2>
-<div id="map"></div>
-<div id="visited-count"></div>
-</section>
+  <section id="map-section">
+    <h2>Carte des voyages</h2>
+    <div id="map"></div>
+    <div id="visited-count"></div>
+  </section>
 </div>
 
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
@@ -87,14 +101,14 @@ function checkPassword() {
     if(password === "Cybelle-1") {
         document.getElementById('login-form').style.display = 'none';
         document.getElementById('main-content').style.display = 'block';
+        setTimeout(()=>{ map.invalidateSize(); loadVisited(); }, 200); // permet à la carte de s'afficher correctement
         loadPhotos();
-        loadVisited();
     } else {
         error.textContent = "Mot de passe incorrect !";
     }
 }
 
-// --- Journal photos avec upload ---
+// --- Journal photos avec upload et suppression ---
 function addPhoto() {
     const country = document.getElementById('photo-country').value;
     const title = document.getElementById('photo-title').value;
@@ -124,19 +138,31 @@ function displayPhotos() {
         const div = document.createElement('div');
         div.className = 'country-album';
         div.innerHTML = `<h3>${country}</h3>`;
-        photos[country].forEach(p => {
+        photos[country].forEach((p, index) => {
             const photoDiv = document.createElement('div');
             photoDiv.className = 'photo';
-            photoDiv.innerHTML = `<h4>${p.title}</h4><img src="${p.imgData}" alt="${p.title}">`;
+            photoDiv.innerHTML = `
+                <h4>${p.title}</h4>
+                <img src="${p.imgData}" alt="${p.title}">
+                <button onclick="deletePhoto('${country}', ${index})">🗑️ Supprimer</button>
+            `;
             div.appendChild(photoDiv);
         });
         journal.appendChild(div);
     }
 }
 
+function deletePhoto(country, index) {
+    let photos = JSON.parse(localStorage.getItem('photos') || '{}');
+    photos[country].splice(index, 1);
+    if(photos[country].length === 0) delete photos[country];
+    localStorage.setItem('photos', JSON.stringify(photos));
+    displayPhotos();
+}
+
 function loadPhotos() { displayPhotos(); }
 
-// --- Carte interactive ---
+// --- Carte interactive Leaflet ---
 const map = L.map('map').setView([48.8566, 2.3522], 2);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution:'© OpenStreetMap' }).addTo(map);
 
