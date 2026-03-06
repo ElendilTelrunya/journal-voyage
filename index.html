@@ -1,124 +1,194 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="fr">
 <head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Terra Memoria</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <style>
-body{
-    font-family: Arial;
-    text-align:center;
-    background:#f4f4f4;
-    margin:0;
-}
+body { font-family: Arial, sans-serif; margin:0; background:#f0f0f0; color:#333; }
+header { background:#4a90e2; color:white; padding:20px; text-align:center; }
+nav { background:#333; }
+nav ul { margin:0; padding:0; display:flex; list-style:none; justify-content:center; }
+nav li { margin:0; }
+nav a { display:block; padding:15px 25px; text-decoration:none; color:white; }
+nav a:hover { background-color:#555; }
+.content { padding:20px; }
+#login-form { max-width:300px; margin:50px auto; background:white; padding:20px; border-radius:8px; box-shadow:0 0 10px rgba(0,0,0,0.1); text-align:center; }
+#login-form input[type="password"] { width:80%; padding:10px; margin-bottom:10px; }
+#login-form button { padding:10px 20px; background-color:#4a90e2; color:white; border:none; cursor:pointer; }
+#login-form button:hover { background-color:#357ab8; }
 
-.login{
-    margin-top:150px;
-}
+#journal { display:flex; flex-wrap:wrap; gap:20px; }
+.country-album { margin-bottom:30px; }
+.country-album h3 { margin-bottom:10px; }
+.photo { background:white; padding:10px; border-radius:8px; box-shadow:0 0 5px rgba(0,0,0,0.1); width:200px; text-align:center; }
+.photo img { max-width:100%; border-radius:5px; }
 
-input{
-    padding:10px;
-    font-size:16px;
-}
-
-button{
-    padding:10px 20px;
-    font-size:16px;
-    cursor:pointer;
-}
-
-#site{
-    display:none;
-}
-
-.header{
-    background:black;
-    color:white;
-    padding:20px 0;
-}
-
-/* --- MENU HORIZONTAL --- */
-.menu{
-    display:flex;
-    justify-content:center;
-    gap:30px;
-    margin-top:15px;
-}
-
-.menu a{
-    color:white;
-    text-decoration:none;
-    font-size:18px;
-    font-weight:bold;
-}
-
-.menu a:hover{
-    text-decoration:underline;
-}
-
-/* --- GALERIE --- */
-.gallery{
-    display:grid;
-    grid-template-columns:repeat(auto-fit, minmax(250px,1fr));
-    gap:20px;
-    padding:20px;
-}
-
-.gallery img{
-    width:100%;
-    border-radius:10px;
-}
-
+#map { height:500px; margin-top:20px; border-radius:8px; }
+#add-photo { margin-bottom:20px; }
+#add-photo select, #add-photo input, #add-photo button { width:100%; padding:5px; margin-bottom:5px; }
+#visited-count { margin-top:10px; font-weight:bold; }
 </style>
 </head>
-
 <body>
 
-<!-- LOGIN -->
-<div class="login" id="login">
-    <h2>Entrer le mot de passe</h2>
-    <input type="password" id="password">
-    <br><br>
-    <button onclick="checkPassword()">Entrer</button>
+<header>
+<h1>Terra Memoria</h1>
+</header>
+
+<div id="login-form">
+<h2>Connexion</h2>
+<input type="password" id="password" placeholder="Mot de passe">
+<br>
+<button onclick="checkPassword()">Se connecter</button>
+<p id="error" style="color:red;"></p>
 </div>
 
-<!-- SITE -->
-<div id="site">
+<div class="content" id="main-content" style="display:none;">
+<nav>
+<ul>
+<li><a href="#journal-section">Journal</a></li>
+<li><a href="#map-section">Carte</a></li>
+</ul>
+</nav>
 
-    <!-- HEADER + MENU -->
-    <div class="header">
-        <h1>Terra Memoria</h1>
-        <p>Le journal de voyage de Clément ❤️</p>
-        <div class="menu">
-            <a href="#">Accueil</a>
-            <a href="#">Nos voyages</a>
-            <a href="#">Photos</a>
-            <a href="#">Carte</a>
-        </div>
-    </div>
+<section id="journal-section">
+<h2>Journal de voyage</h2>
+<div id="add-photo">
+<select id="photo-country">
+<option value="" disabled selected>Pays</option>
+<option value="Japon">Japon</option>
+<option value="France">France</option>
+<option value="USA">USA</option>
+</select>
+<input type="text" id="photo-title" placeholder="Titre de la photo">
+<input type="file" id="photo-file" accept="image/*">
+<button onclick="addPhoto()">Ajouter</button>
+</div>
+<div id="journal"></div>
+</section>
 
-    <!-- GALERIE -->
-    <h2>Nos voyages</h2>
-    <div class="gallery">
-        <img src="japon1.jpg">
-        <img src="japon2.jpg">
-        <img src="japon3.jpg">
-    </div>
-
+<section id="map-section">
+<h2>Carte des voyages</h2>
+<div id="map"></div>
+<div id="visited-count"></div>
+</section>
 </div>
 
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script>
-function checkPassword(){
-    var password=document.getElementById("password").value;
-    if(password=="Cybelle-1"){
-        document.getElementById("login").style.display="none";
-        document.getElementById("site").style.display="block";
+// --- Mot de passe ---
+function checkPassword() {
+    const password = document.getElementById('password').value;
+    const error = document.getElementById('error');
+    if(password === "Cybelle-1") {
+        document.getElementById('login-form').style.display = 'none';
+        document.getElementById('main-content').style.display = 'block';
+        loadPhotos();
+        loadVisited();
     } else {
-        alert("Mot de passe incorrect");
+        error.textContent = "Mot de passe incorrect !";
     }
 }
-</script>
 
+// --- Journal photos avec upload ---
+function addPhoto() {
+    const country = document.getElementById('photo-country').value;
+    const title = document.getElementById('photo-title').value;
+    const fileInput = document.getElementById('photo-file');
+    if(!country || !title || fileInput.files.length===0) return;
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const imgData = e.target.result;
+        let photos = JSON.parse(localStorage.getItem('photos') || '{}');
+        if(!photos[country]) photos[country] = [];
+        photos[country].push({title, imgData});
+        localStorage.setItem('photos', JSON.stringify(photos));
+        displayPhotos();
+        document.getElementById('photo-title').value = '';
+        document.getElementById('photo-file').value = '';
+        document.getElementById('photo-country').value = '';
+    }
+    reader.readAsDataURL(fileInput.files[0]);
+}
+
+function displayPhotos() {
+    const journal = document.getElementById('journal');
+    journal.innerHTML = '';
+    const photos = JSON.parse(localStorage.getItem('photos') || '{}');
+    for(let country in photos) {
+        const div = document.createElement('div');
+        div.className = 'country-album';
+        div.innerHTML = `<h3>${country}</h3>`;
+        photos[country].forEach(p => {
+            const photoDiv = document.createElement('div');
+            photoDiv.className = 'photo';
+            photoDiv.innerHTML = `<h4>${p.title}</h4><img src="${p.imgData}" alt="${p.title}">`;
+            div.appendChild(photoDiv);
+        });
+        journal.appendChild(div);
+    }
+}
+
+function loadPhotos() { displayPhotos(); }
+
+// --- Carte interactive ---
+const map = L.map('map').setView([48.8566, 2.3522], 2);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution:'© OpenStreetMap' }).addTo(map);
+
+const places = [
+    {name:"Tokyo", coords:[35.6895,139.6917], country:"Japon"},
+    {name:"Kyoto", coords:[35.0116,135.7681], country:"Japon"},
+    {name:"Osaka", coords:[34.6937,135.5022], country:"Japon"},
+    {name:"Paris", coords:[48.8566,2.3522], country:"France"},
+    {name:"New York", coords:[40.7128,-74.0060], country:"USA"}
+];
+
+let visited = JSON.parse(localStorage.getItem('visited') || '{}');
+
+function updateVisitedCount() {
+    const count = Object.values(visited).filter(v => v).length;
+    document.getElementById('visited-count').textContent = `Pays visités : ${count}`;
+}
+
+places.forEach(place => {
+    const icon = L.icon({
+        iconUrl: visited[place.country] ? 'https://cdn-icons-png.flaticon.com/512/190/190411.png' : 'https://cdn-icons-png.flaticon.com/512/190/190406.png',
+        iconSize: [30, 30]
+    });
+    const marker = L.marker(place.coords, {icon}).addTo(map);
+    marker.bindPopup(`<input type="checkbox" onchange="toggleVisited(this,'${place.country}')" ${visited[place.country]?'checked':''}> ${place.name}`);
+    place.marker = marker;
+});
+
+function toggleVisited(checkbox, country) {
+    visited[country] = checkbox.checked;
+    localStorage.setItem('visited', JSON.stringify(visited));
+    // Update icon
+    places.filter(p=>p.country===country).forEach(p=>{
+        const iconUrl = visited[country] ? 'https://cdn-icons-png.flaticon.com/512/190/190411.png' : 'https://cdn-icons-png.flaticon.com/512/190/190406.png';
+        p.marker.setIcon(L.icon({iconUrl, iconSize:[30,30]}));
+    });
+    updateVisitedCount();
+}
+
+function loadVisited() {
+    updateVisitedCount();
+    map.eachLayer(layer => {
+        if(layer.getPopup){
+            const popup = layer.getPopup();
+            if(popup){
+                const content = popup.getContent();
+                const country = content.replace(/<input[^>]*>/,'').trim();
+                const checked = visited[country]? 'checked' : '';
+                layer.setPopupContent(`<input type="checkbox" onchange="toggleVisited(this,'${country}')" ${checked}> ${country}`);
+            }
+        }
+    });
+}
+
+</script>
 </body>
 </html>
