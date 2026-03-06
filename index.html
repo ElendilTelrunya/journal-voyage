@@ -6,7 +6,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <style>
-
 body{
 font-family: Arial;
 text-align:center;
@@ -21,7 +20,7 @@ margin-top:150px;
 input{
 padding:10px;
 font-size:16px;
-}
+
 
 button{
 padding:10px 20px;
@@ -39,6 +38,23 @@ color:white;
 padding:40px;
 }
 
+/* --- MENU --- */
+.menu{
+margin-top:20px;
+}
+ 
+.menu a{
+color:white;
+margin:15px;
+text-decoration:none;
+font-size:18px;
+}
+
+.menu a:hover{
+text-decoration:underline;
+}
+
+/* --- GALERIE --- */
 .gallery{
 display:grid;
 grid-template-columns:repeat(auto-fit, minmax(250px,1fr));
@@ -57,51 +73,49 @@ border-radius:10px;
 
 <body>
 
+<!-- LOGIN -->
 <div class="login" id="login">
-
 <h2>Entrer le mot de passe</h2>
-
 <input type="password" id="password">
 <br><br>
-
 <button onclick="checkPassword()">Entrer</button>
-
 </div>
 
+<!-- SITE -->
 <div id="site">
 
+<!-- HEADER + MENU -->
 <div class="header">
 <h1>Terra Memoria</h1>
-<p>Nos aventures autour du monde</p>
+<p>Le journal de voyage de Clément ❤️</p>
+<div class="menu">
+<a href="#">Accueil</a>
+<a href="#">Nos voyages</a>
+<a href="#">Photos</a>
+<a href="#">Carte</a>
+</div>
 </div>
 
+<!-- GALERIE -->
+<h2>Nos voyages</h2>
 <div class="gallery">
-
-<img src="photo1.jpg">
-<img src="photo2.jpg">
-<img src="photo3.jpg">
-
+<img src="japon1.jpg">
+<img src="japon2.jpg">
+<img src="japon3.jpg">
 </div>
 
 </div>
 
 <script>
-
 function checkPassword(){
-
 var password=document.getElementById("password").value;
-
 if(password=="Cybelle-1"){
 document.getElementById("login").style.display="none";
 document.getElementById("site").style.display="block";
-}
-
-else{
+} else {
 alert("Mot de passe incorrect");
 }
-
 }
-
 </script>
 
 </body>
