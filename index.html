@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-<title>Notre journal de voyage</title>
+<title>Terra Memoria</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <style>
@@ -10,10 +11,30 @@ body{
 font-family: Arial;
 text-align:center;
 background:#f4f4f4;
+margin:0;
+}
+
+.login{
+margin-top:150px;
+}
+
+input{
+padding:10px;
+font-size:16px;
+}
+
+button{
+padding:10px 20px;
+font-size:16px;
+cursor:pointer;
+}
+
+#site{
+display:none;
 }
 
 .header{
-background:#000;
+background:black;
 color:white;
 padding:40px;
 }
@@ -31,13 +52,27 @@ border-radius:10px;
 }
 
 </style>
+
 </head>
 
 <body>
 
+<div class="login" id="login">
+
+<h2>Entrer le mot de passe</h2>
+
+<input type="password" id="password">
+<br><br>
+
+<button onclick="checkPassword()">Entrer</button>
+
+</div>
+
+<div id="site">
+
 <div class="header">
-<h1>Terra Memoria </h1>
-<p>Nos aventures autour du monde </p>
+<h1>Terra Memoria</h1>
+<p>Nos aventures autour du monde</p>
 </div>
 
 <div class="gallery">
@@ -47,6 +82,27 @@ border-radius:10px;
 <img src="photo3.jpg">
 
 </div>
+
+</div>
+
+<script>
+
+function checkPassword(){
+
+var password=document.getElementById("password").value;
+
+if(password=="Cybelle-1"){
+document.getElementById("login").style.display="none";
+document.getElementById("site").style.display="block";
+}
+
+else{
+alert("Mot de passe incorrect");
+}
+
+}
+
+</script>
 
 </body>
 </html>
