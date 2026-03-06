@@ -35,26 +35,29 @@ button{
 .header{
     background:black;
     color:white;
-    padding:40px;
+    padding:20px 0;
 }
 
-/* --- MENU --- /
+/* --- MENU HORIZONTAL --- */
 .menu{
-    margin-top:20px;
+    display:flex;
+    justify-content:center;
+    gap:30px;
+    margin-top:15px;
 }
 
 .menu a{
     color:white;
-    margin:15px;
     text-decoration:none;
     font-size:18px;
+    font-weight:bold;
 }
 
 .menu a:hover{
     text-decoration:underline;
 }
 
-/ --- GALERIE --- */
+/* --- GALERIE --- */
 .gallery{
     display:grid;
     grid-template-columns:repeat(auto-fit, minmax(250px,1fr));
@@ -66,8 +69,8 @@ button{
     width:100%;
     border-radius:10px;
 }
-</style>
 
+</style>
 </head>
 
 <body>
@@ -86,7 +89,36 @@ button{
     <!-- HEADER + MENU -->
     <div class="header">
         <h1>Terra Memoria</h1>
-        <p>Le journal de voyage de Clément </p>
+        <p>Le journal de voyage de Clément ❤️</p>
         <div class="menu">
             <a href="#">Accueil</a>
-            <a href="#">
+            <a href="#">Nos voyages</a>
+            <a href="#">Photos</a>
+            <a href="#">Carte</a>
+        </div>
+    </div>
+
+    <!-- GALERIE -->
+    <h2>Nos voyages</h2>
+    <div class="gallery">
+        <img src="japon1.jpg">
+        <img src="japon2.jpg">
+        <img src="japon3.jpg">
+    </div>
+
+</div>
+
+<script>
+function checkPassword(){
+    var password=document.getElementById("password").value;
+    if(password=="Cybelle-1"){
+        document.getElementById("login").style.display="none";
+        document.getElementById("site").style.display="block";
+    } else {
+        alert("Mot de passe incorrect");
+    }
+}
+</script>
+
+</body>
+</html>
