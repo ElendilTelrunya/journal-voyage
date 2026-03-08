@@ -1,15 +1,15 @@
 body{
 margin:0;
 font-family:Arial, sans-serif;
-background:#f4f4f4;
+background: url("images/fond.jpg") no-repeat center center fixed;
+background-size: cover;
 }
 
 header{
 height:250px;
-background:linear-gradient(rgba(0,0,0,0.4),rgba(0,0,0,0.4)),
-url("https://images.unsplash.com/photo-1507525428034-b723cf961d3e");
-background-size:cover;
-background-position:center;
+background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)),
+url("images/header.jpg") no-repeat center center;
+background-size: cover;
 display:flex;
 align-items:center;
 justify-content:center;
@@ -25,7 +25,7 @@ left:15px;
 font-size:30px;
 cursor:pointer;
 z-index:1000;
-color:black;
+color:white;
 }
 
 #menu{
@@ -53,7 +53,18 @@ left:0;
 }
 
 .page{
+display:none;
 padding:20px;
+}
+
+#mapPage{
+display:block;
+}
+
+#map{
+height:500px;
+width:100%;
+margin-top:20px;
 }
 
 button{
