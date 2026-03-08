@@ -5,6 +5,9 @@ function toggleMenu(){
 
   let content = document.getElementById("content");
   content.style.marginLeft = menu.classList.contains("open") ? "250px" : "0px";
+  document.querySelectorAll(".page").forEach(p=>{
+    p.style.paddingLeft = menu.classList.contains("open") ? "20px" : "20px";
+  });
 }
 
 // Pages
@@ -60,6 +63,7 @@ function addCountry(){
   saveAlbums();
   renderAlbums();
 }
+
 // Ajouter une ville à un pays
 function addCity(country){
   let city = prompt("Nom de la ville :");
@@ -103,7 +107,7 @@ function renderAlbums(){
 // Initial render
 renderAlbums();
 
-// Concerts (provisoire)
+// Concerts
 let concerts = JSON.parse(localStorage.getItem("concerts")) || [];
 
 function addConcert(){
