@@ -1,249 +1,68 @@
 <!DOCTYPE html>
-<html>
+<html lang="fr">
+
 <head>
-<title>Terra Memoria</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<!-- Leaflet CSS -->
-<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-<style>
-body{
-    font-family: Arial;
-    text-align:center;
-    background:#f4f4f4;
-    margin:0;
-}
 
-.login{
-    margin-top:150px;
-}
+<meta charset="UTF-8">
+<title>Nos souvenirs de voyage</title>
 
-input, select{
-    padding:10px;
-    font-size:16px;
-    margin:5px;
-}
+<link rel="stylesheet" href="style.css">
 
-button{
-    padding:10px 20px;
-    font-size:16px;
-    cursor:pointer;
-}
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 
-#site{
-    display:none;
-}
-
-.header{
-    background:black;
-    color:white;
-    padding:20px 0;
-}
-
-.menu{
-    display:flex;
-    justify-content:center;
-    gap:30px;
-    margin-top:15px;
-}
-
-.menu a{
-    color:white;
-    text-decoration:none;
-    font-size:18px;
-    font-weight:bold;
-}
-
-.menu a:hover{
-    text-decoration:underline;
-}
-
-.gallery{
-    display:grid;
-    grid-template-columns:repeat(auto-fit, minmax(250px,1fr));
-    gap:20px;
-    padding:20px;
-}
-
-.gallery img{
-    width:100%;
-    border-radius:10px;
-}
-
-#map{
-    height:500px;
-    margin:20px auto;
-    max-width:800px;
-    border-radius:10px;
-}
-
-#city-form{
-    margin:20px;
-}
-
-#city-list{
-    margin-top:10px;
-    text-align:left;
-    display:inline-block;
-}
-</style>
 </head>
+
 <body>
 
-<!-- LOGIN -->
-<div class="login" id="login">
-    <h2>Entrer le mot de passe</h2>
-    <input type="password" id="password">
-    <br><br>
-    <button onclick="checkPassword()">Entrer</button>
-</div>
+<div class="menu-btn" onclick="toggleMenu()">☰</div>
 
-<!-- SITE -->
-<div id="site">
+<div id="menu">
 
-    <div class="header">
-        <h1>Terra Memoria</h1>
-        <p>Le journal de voyage de Clément ❤️</p>
-        <div class="menu">
-            <a href="#">Accueil</a>
-            <a href="#voyages">Nos voyages</a>
-            <a href="#photos">Photos</a>
-            <a href="#carte">Carte</a>
-        </div>
-    </div>
+<h2>Menu</h2>
 
-    <h2 id="voyages">Nos voyages</h2>
-    <div class="gallery" id="gallery">
-        <!-- Photos initiales -->
-    </div>
-
-    <h2 id="carte">Carte interactive</h2>
-    <div id="map"></div>
-
-    <div id="city-form">
-        <h3>Ajouter une ville ou région</h3>
-        <input type="text" id="city-input" placeholder="Nom de la ville">
-        <select id="country-select">
-            <!-- Pays ajoutés dynamiquement -->
-        </select>
-        <button onclick="addCity()">Ajouter</button>
-        <div id="city-list"></div>
-    </div>
+<a onclick="showPage('map')">Carte interactive</a>
+<a onclick="showPage('albums')">Albums photos</a>
+<a onclick="showPage('concerts')">Concerts</a>
 
 </div>
 
-<!-- Leaflet JS -->
+<header>
+
+<h1>Nos souvenirs de voyage</h1>
+
+</header>
+
+<div id="content">
+
+<div id="mapPage" class="page">
+<div id="map"></div>
+</div>
+
+<div id="albumsPage" class="page">
+
+<h2>Albums photos</h2>
+
+<button onclick="addCountry()">Ajouter un pays</button>
+
+<div id="countries"></div>
+
+</div>
+
+<div id="concertsPage" class="page">
+
+<h2>Concerts</h2>
+
+<button onclick="addConcert()">Ajouter un concert</button>
+
+<div id="concertList"></div>
+
+</div>
+
+</div>
+
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-<script>
-let countries = {}; // {nomPays: {lat, lng, villes: []}}
-let currentCountry = null;
-let map;
-let markers = {}; // pour garder les markers Leaflet
-
-function checkPassword(){
-    const password = document.getElementById("password").value;
-    if(password==="Cybelle-1"){
-        document.getElementById("login").style.display="none";
-        document.getElementById("site").style.display="block";
-        initMap();
-        loadData();
-        renderAllMarkers();
-    } else {
-        alert("Mot de passe incorrect");
-    }
-}
-
-// Initialiser la carte Leaflet
-function initMap(){
-    map = L.map('map').setView([20,0], 2); // vue monde entier
-
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19,
-    }).addTo(map);
-
-    // Ajouter un pays en cliquant
-    map.on('click', function(e){
-        const countryName = prompt("Nom du pays à ajouter ?");
-        if(!countryName) return;
-
-        if(!countries[countryName]){
-            countries[countryName] = {lat:e.latlng.lat, lng:e.latlng.lng, villes:[]};
-        }
-        renderMarker(countryName);
-        updateCountrySelect();
-        saveData();
-    });
-}
-
-// Créer un marker pour un pays
-function renderMarker(countryName){
-    if(markers[countryName]) return;
-    const country = countries[countryName];
-    const marker = L.marker([country.lat, country.lng]).addTo(map)
-        .bindPopup(countryName)
-        .on('click', () => showCountry(countryName));
-    markers[countryName] = marker;
-}
-
-// Afficher villes et photos
-function showCountry(country){
-    currentCountry = country;
-    displayCities(country);
-    const images = document.querySelectorAll('#gallery img');
-    images.forEach(img => {
-        if(img.classList.contains(country)) img.style.display='block';
-        else img.style.display='none';
-    });
-}
-
-// Ajouter ville
-function addCity(){
-    const cityInput = document.getElementById('city-input').value.trim();
-    if(!cityInput || !currentCountry) return;
-    countries[currentCountry].villes.push(cityInput);
-    document.getElementById('city-input').value='';
-    displayCities(currentCountry);
-    saveData();
-}
-
-// Afficher villes
-function displayCities(country){
-    const cityListDiv = document.getElementById('city-list');
-    const cityArray = countries[country].villes || [];
-    let html = `<h4>Villes / Régions visités : ${country}</h4><ul>`;
-    cityArray.forEach(c => html += `<li>${c}</li>`);
-    html += '</ul>';
-    cityListDiv.innerHTML = html;
-}
-
-// Mettre à jour le select des pays
-function updateCountrySelect(){
-    const select = document.getElementById('country-select');
-    select.innerHTML='';
-    Object.keys(countries).forEach(c => {
-        const option = document.createElement('option');
-        option.value = c;
-        option.innerText = c;
-        select.appendChild(option);
-    });
-}
-
-// Sauvegarder localStorage
-function saveData(){
-    localStorage.setItem('terraMemoriaData', JSON.stringify(countries));
-}
-
-// Charger depuis localStorage
-function loadData(){
-    const data = JSON.parse(localStorage.getItem('terraMemoriaData'));
-    if(data) countries = data;
-}
-
-// Afficher tous les markers existants
-function renderAllMarkers(){
-    Object.keys(countries).forEach(c => renderMarker(c));
-    updateCountrySelect();
-}
-</script>
+<script src="script.js"></script>
 
 </body>
+
 </html>
