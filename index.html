@@ -1,92 +1,59 @@
 <!DOCTYPE html>
 <html lang="fr">
-
 <head>
-
 <meta charset="UTF-8">
 <title>Journal de Voyage</title>
-
 <link rel="stylesheet" href="style.css">
 
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<!-- svgMap -->
+<link href="https://cdn.jsdelivr.net/npm/svgmap@latest/dist/svgMap.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/svgmap@latest/dist/svgMap.min.js"></script>
 
 </head>
-
 <body>
 
 <div id="login">
-
-<h2>Accès au journal</h2>
-
-<input type="password" id="password">
-
-<button onclick="login()">Entrer</button>
-
+  <h2>Accès au journal</h2>
+  <input type="password" id="password">
+  <button onclick="login()">Entrer</button>
 </div>
-
 
 <div id="site">
 
 <header>
-
-<div class="hamburger" onclick="toggleMenu()">☰</div>
-
-<h1>Journal de Voyage</h1>
-
+  <div class="hamburger" onclick="toggleMenu()">☰</div>
+  <h1>Journal de Voyage</h1>
 </header>
 
-
 <nav id="menu">
-
-<h3>Navigation</h3>
-
-<button onclick="showHome()">Accueil</button>
-<button onclick="showMap()">Carte</button>
-<button onclick="showCategories()">Catégories</button>
-
-<hr>
-
-<h3>Ajouter</h3>
-
-<input id="country" placeholder="Pays">
-<input id="city" placeholder="Ville">
-<input id="date" type="date">
-
-<button onclick="addTrip()">Ajouter voyage</button>
-
-<button onclick="addMedia()">Ajouter photo / vidéo</button>
-
+  <h3>Navigation</h3>
+  <button onclick="showHome()">Accueil</button>
+  <button onclick="showMap()">Carte</button>
+  <button onclick="showCategories()">Catégories</button>
 </nav>
-
 
 <main>
 
 <section id="homePage">
-
-<h2>Galerie</h2>
-
-<div id="gallery"></div>
-
+  <h2>Galerie</h2>
+  <div id="gallery"></div>
 </section>
-
 
 <section id="mapPage" class="hidden">
-
-<h2>Carte des voyages</h2>
-
-<div id="map"></div>
-
+  <h2>Carte des pays visités</h2>
+  <div id="svgMap"></div>
 </section>
 
-
 <section id="categoryPage" class="hidden">
-
-<h2>Catégories</h2>
-
-<ul id="categories"></ul>
-
+  <h2>Catégories</h2>
+  <ul id="categories"></ul>
+  <input id="newCategory" placeholder="Nouvelle catégorie">
+  <button onclick="addCategory()">Ajouter catégorie</button>
+  <hr>
+  <h3>Sous-catégorie</h3>
+  <select id="parentCategory"></select>
+  <input id="newSub" placeholder="Sous-catégorie">
+  <button onclick="addSub()">Ajouter sous-catégorie</button>
 </section>
 
 </main>
@@ -94,7 +61,5 @@
 </div>
 
 <script src="script.js"></script>
-
 </body>
-
 </html>
