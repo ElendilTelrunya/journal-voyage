@@ -2,48 +2,85 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>Nos souvenirs de voyage</title>
+<title>Journal de Voyage</title>
 <link rel="stylesheet" href="style.css">
-<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+
+<link
+rel="stylesheet"
+href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+/>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
 </head>
 
 <body>
 
-<div class="menu-btn" onclick="toggleMenu()">☰</div>
+<div id="login">
 
-<div id="menu">
-<h2>Menu</h2>
-<a onclick="showPage('map')">Carte interactive</a>
-<a onclick="showPage('albums')">Albums photos</a>
-<a onclick="showPage('concerts')">Concerts</a>
+<h2>Accès au blog</h2>
+
+<input type="password" id="password" placeholder="Mot de passe">
+
+<button onclick="login()">Entrer</button>
+
 </div>
+
+
+<div id="site">
 
 <header>
-<h1>Nos souvenirs de voyage</h1>
+
+<div class="hamburger" onclick="toggleMenu()">☰</div>
+
+<h1>Journal de Voyage</h1>
+
 </header>
 
-<div id="content">
 
-<div id="mapPage" class="page">
+<nav id="menu">
+
+<h3>Catégories</h3>
+
+<ul id="categories"></ul>
+
+<input id="newCategory" placeholder="Nouvelle catégorie">
+
+<button onclick="addCategory()">Ajouter</button>
+
+<hr>
+
+<h3>Sous catégorie</h3>
+
+<select id="parentCategory"></select>
+
+<input id="newSub">
+
+<button onclick="addSub()">Ajouter</button>
+
+<hr>
+
+<h3>Carte des voyages</h3>
+
 <div id="map"></div>
+
+<hr>
+
+<button onclick="addMedia()">Ajouter photo / vidéo</button>
+
+</nav>
+
+
+<main>
+
+<h2>Galerie</h2>
+
+<div id="gallery"></div>
+
+</main>
+
 </div>
 
-<div id="albumsPage" class="page">
-<h2>Albums photos</h2>
-<button onclick="addCountry()">Ajouter un pays</button>
-<div id="countries"></div>
-<div id="albumGrid" class="album-grid"></div>
-</div>
-
-<div id="concertsPage" class="page">
-<h2>Concerts</h2>
-<button onclick="addConcert()">Ajouter un concert</button>
-<div id="concertList"></div>
-</div>
-
-</div>
-
-<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script src="script.js"></script>
 
 </body>
