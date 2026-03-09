@@ -1,8 +1,7 @@
-const PASSWORD="voyage"
+const PASSWORD="Cybelle-1"
 
 let map
 let markers=[]
-
 
 
 function login(){
@@ -18,12 +17,11 @@ init()
 
 }else{
 
-alert("mauvais mot de passe")
+alert("Mauvais mot de passe")
 
 }
 
 }
-
 
 
 function toggleMenu(){
@@ -32,13 +30,50 @@ document.getElementById("menu").classList.toggle("open")
 
 }
 
+function closeMenu(){
+
+document.getElementById("menu").classList.remove("open")
+
+}
 
 
 function init(){
 
 initMap()
-loadTrips()
 loadGallery()
+
+}
+
+
+/* NAVIGATION */
+
+function showHome(){
+
+document.getElementById("homePage").classList.remove("hidden")
+document.getElementById("mapPage").classList.add("hidden")
+document.getElementById("categoryPage").classList.add("hidden")
+
+closeMenu()
+
+}
+
+function showMap(){
+
+document.getElementById("homePage").classList.add("hidden")
+document.getElementById("mapPage").classList.remove("hidden")
+document.getElementById("categoryPage").classList.add("hidden")
+
+closeMenu()
+
+}
+
+function showCategories(){
+
+document.getElementById("homePage").classList.add("hidden")
+document.getElementById("mapPage").classList.add("hidden")
+document.getElementById("categoryPage").classList.remove("hidden")
+
+closeMenu()
 
 }
 
@@ -56,27 +91,33 @@ let saved=JSON.parse(localStorage.getItem("markers"))||[]
 
 saved.forEach(addMarker)
 
-}
+map.on("click",function(e){
 
+addMarker([e.latlng.lat,e.latlng.lng])
+
+saveMarkers()
+
+})
+
+}
 
 
 function addMarker(coords){
 
 let marker=L.circle(coords,{
-
 radius:500000,
-
 color:"grey",
-
 fillColor:"grey",
-
 fillOpacity:0.5
-
 }).addTo(map)
 
 marker.on("click",function(){
 
 map.removeLayer(marker)
+
+markers=markers.filter(m=>m!==marker)
+
+saveMarkers()
 
 })
 
@@ -85,48 +126,11 @@ markers.push(marker)
 }
 
 
+function saveMarkers(){
 
-/* VOYAGES */
+let data=markers.map(m=>[m.getLatLng().lat,m.getLatLng().lng])
 
-function addTrip(){
-
-let country=document.getElementById("country").value
-let city=document.getElementById("city").value
-let date=document.getElementById("date").value
-
-let trips=JSON.parse(localStorage.getItem("trips"))||[]
-
-trips.push({country,city,date})
-
-localStorage.setItem("trips",JSON.stringify(trips))
-
-loadTrips()
-
-}
-
-
-
-function loadTrips(){
-
-let timeline=document.getElementById("timeline")
-
-timeline.innerHTML=""
-
-let trips=JSON.parse(localStorage.getItem("trips"))||[]
-
-trips.sort((a,b)=>new Date(b.date)-new Date(a.date))
-
-trips.forEach(t=>{
-
-let div=document.createElement("div")
-
-div.className="trip"
-
-div.innerHTML="🌍 "+t.country+" - "+t.city+" ("+t.date+")"
-
-timeline.appendChild(div)
-
-})
+localStorage.setItem("markers",JSON.stringify(data))
 
 }
 
@@ -167,7 +171,6 @@ reader.readAsDataURL(file)
 input.click()
 
 }
-
 
 
 function loadGallery(){
@@ -221,7 +224,6 @@ gallery.appendChild(div)
 }
 
 
-
 function deleteMedia(i){
 
 let media=JSON.parse(localStorage.getItem("media"))
@@ -231,19 +233,5 @@ media.splice(i,1)
 localStorage.setItem("media",JSON.stringify(media))
 
 loadGallery()
-
-}
-
-
-
-function clearData(){
-
-if(confirm("supprimer tout le blog ?")){
-
-localStorage.clear()
-
-location.reload()
-
-}
 
 }
