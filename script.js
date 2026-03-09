@@ -1,5 +1,10 @@
 const PASSWORD="voyage"
 
+let map
+let markers=[]
+
+
+
 function login(){
 
 let p=document.getElementById("password").value
@@ -7,18 +12,18 @@ let p=document.getElementById("password").value
 if(p===PASSWORD){
 
 document.getElementById("login").style.display="none"
-
 document.getElementById("site").style.display="block"
 
 init()
 
 }else{
 
-alert("Mauvais mot de passe")
+alert("mauvais mot de passe")
 
 }
 
 }
+
 
 
 function toggleMenu(){
@@ -31,91 +36,9 @@ document.getElementById("menu").classList.toggle("open")
 
 function init(){
 
-loadCategories()
-
-loadGallery()
-
 initMap()
-
-}
-
-
-
-/* CATEGORIES */
-
-function addCategory(){
-
-let name=document.getElementById("newCategory").value
-
-let cats=JSON.parse(localStorage.getItem("cats"))||{}
-
-cats[name]=[]
-
-localStorage.setItem("cats",JSON.stringify(cats))
-
-loadCategories()
-
-}
-
-
-
-function addSub(){
-
-let parent=document.getElementById("parentCategory").value
-
-let sub=document.getElementById("newSub").value
-
-let cats=JSON.parse(localStorage.getItem("cats"))
-
-cats[parent].push(sub)
-
-localStorage.setItem("cats",JSON.stringify(cats))
-
-loadCategories()
-
-}
-
-
-
-function loadCategories(){
-
-let cats=JSON.parse(localStorage.getItem("cats"))||{}
-
-let ul=document.getElementById("categories")
-
-let select=document.getElementById("parentCategory")
-
-ul.innerHTML=""
-
-select.innerHTML=""
-
-for(let c in cats){
-
-let li=document.createElement("li")
-
-li.innerHTML="<b>"+c+"</b>"
-
-ul.appendChild(li)
-
-let opt=document.createElement("option")
-
-opt.value=c
-
-opt.innerText=c
-
-select.appendChild(opt)
-
-cats[c].forEach(s=>{
-
-let sub=document.createElement("li")
-
-sub.innerText=" - "+s
-
-ul.appendChild(sub)
-
-})
-
-}
+loadTrips()
+loadGallery()
 
 }
 
@@ -125,23 +48,21 @@ ul.appendChild(sub)
 
 function initMap(){
 
-let map=L.map('map').setView([20,0],2)
+map=L.map('map').setView([20,0],2)
 
 L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map)
 
-let visited=JSON.parse(localStorage.getItem("visited"))||[]
+let saved=JSON.parse(localStorage.getItem("markers"))||[]
 
-map.on("click",function(e){
+saved.forEach(addMarker)
 
-let lat=e.latlng.lat
+}
 
-let lng=e.latlng.lng
 
-visited.push([lat,lng])
 
-localStorage.setItem("visited",JSON.stringify(visited))
+function addMarker(coords){
 
-L.circle([lat,lng],{
+let marker=L.circle(coords,{
 
 radius:500000,
 
@@ -152,22 +73,58 @@ fillColor:"grey",
 fillOpacity:0.5
 
 }).addTo(map)
+
+marker.on("click",function(){
+
+map.removeLayer(marker)
 
 })
 
-visited.forEach(v=>{
+markers.push(marker)
 
-L.circle(v,{
+}
 
-radius:500000,
 
-color:"grey",
 
-fillColor:"grey",
+/* VOYAGES */
 
-fillOpacity:0.5
+function addTrip(){
 
-}).addTo(map)
+let country=document.getElementById("country").value
+let city=document.getElementById("city").value
+let date=document.getElementById("date").value
+
+let trips=JSON.parse(localStorage.getItem("trips"))||[]
+
+trips.push({country,city,date})
+
+localStorage.setItem("trips",JSON.stringify(trips))
+
+loadTrips()
+
+}
+
+
+
+function loadTrips(){
+
+let timeline=document.getElementById("timeline")
+
+timeline.innerHTML=""
+
+let trips=JSON.parse(localStorage.getItem("trips"))||[]
+
+trips.sort((a,b)=>new Date(b.date)-new Date(a.date))
+
+trips.forEach(t=>{
+
+let div=document.createElement("div")
+
+div.className="trip"
+
+div.innerHTML="🌍 "+t.country+" - "+t.city+" ("+t.date+")"
+
+timeline.appendChild(div)
 
 })
 
@@ -274,5 +231,19 @@ media.splice(i,1)
 localStorage.setItem("media",JSON.stringify(media))
 
 loadGallery()
+
+}
+
+
+
+function clearData(){
+
+if(confirm("supprimer tout le blog ?")){
+
+localStorage.clear()
+
+location.reload()
+
+}
 
 }
