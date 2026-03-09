@@ -1,15 +1,14 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
+
 <meta charset="UTF-8">
 <title>Journal de Voyage</title>
+
 <link rel="stylesheet" href="style.css">
 
-<link
-rel="stylesheet"
-href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-/>
-
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 </head>
@@ -18,9 +17,9 @@ href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
 
 <div id="login">
 
-<h2>Accès au blog</h2>
+<h2>Accès au journal</h2>
 
-<input type="password" id="password" placeholder="Mot de passe">
+<input type="password" id="password">
 
 <button onclick="login()">Entrer</button>
 
@@ -40,42 +39,54 @@ href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
 
 <nav id="menu">
 
-<h3>Catégories</h3>
+<h3>Ajouter voyage</h3>
 
-<ul id="categories"></ul>
+<input id="country" placeholder="Pays">
 
-<input id="newCategory" placeholder="Nouvelle catégorie">
+<input id="city" placeholder="Ville">
 
-<button onclick="addCategory()">Ajouter</button>
+<input id="date" type="date">
 
-<hr>
-
-<h3>Sous catégorie</h3>
-
-<select id="parentCategory"></select>
-
-<input id="newSub">
-
-<button onclick="addSub()">Ajouter</button>
-
-<hr>
-
-<h3>Carte des voyages</h3>
-
-<div id="map"></div>
+<button onclick="addTrip()">Ajouter</button>
 
 <hr>
 
 <button onclick="addMedia()">Ajouter photo / vidéo</button>
+
+<hr>
+
+<button onclick="clearData()">Reset blog</button>
 
 </nav>
 
 
 <main>
 
+<section>
+
+<h2>Carte des voyages</h2>
+
+<div id="map"></div>
+
+</section>
+
+
+<section>
+
+<h2>Timeline</h2>
+
+<div id="timeline"></div>
+
+</section>
+
+
+<section>
+
 <h2>Galerie</h2>
 
 <div id="gallery"></div>
+
+</section>
 
 </main>
 
@@ -84,4 +95,5 @@ href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
 <script src="script.js"></script>
 
 </body>
+
 </html>
