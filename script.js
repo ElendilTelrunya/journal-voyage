@@ -1,131 +1,278 @@
-// Menu
+const PASSWORD="voyage"
+
+function login(){
+
+let p=document.getElementById("password").value
+
+if(p===PASSWORD){
+
+document.getElementById("login").style.display="none"
+
+document.getElementById("site").style.display="block"
+
+init()
+
+}else{
+
+alert("Mauvais mot de passe")
+
+}
+
+}
+
+
 function toggleMenu(){
-  let menu = document.getElementById("menu");
-  menu.classList.toggle("open");
 
-  let content = document.getElementById("content");
-  content.style.marginLeft = menu.classList.contains("open") ? "250px" : "0px";
-  document.querySelectorAll(".page").forEach(p=>{
-    p.style.paddingLeft = menu.classList.contains("open") ? "20px" : "20px";
-  });
+document.getElementById("menu").classList.toggle("open")
+
 }
 
-// Pages
-function showPage(page){
-  document.querySelectorAll(".page").forEach(p=>p.style.display="none");
-  if(page==="map") document.getElementById("mapPage").style.display="block";
-  if(page==="albums") document.getElementById("albumsPage").style.display="block";
-  if(page==="concerts") document.getElementById("concertsPage").style.display="block";
+
+
+function init(){
+
+loadCategories()
+
+loadGallery()
+
+initMap()
+
 }
 
-// Carte interactive avec markers
-var map = L.map('map').setView([20,0],2);
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19}).addTo(map);
 
-// Pays visités
-let visitedCountries = JSON.parse(localStorage.getItem("visitedCountries")) || {};
 
-// Liste simplifiée de pays
-let countries = [
-  {name:"France", coords:[46.603354,1.888334]},
-  {name:"Italie", coords:[41.87194,12.56738]},
-  {name:"Espagne", coords:[40.463667,-3.74922]},
-  {name:"Japon", coords:[36.204824,138.252924]}
-];
+/* CATEGORIES */
 
-// Ajouter les markers
-countries.forEach(c=>{
-  let color = visitedCountries[c.name] ? "gray" : "blue";
-  let marker = L.circleMarker(c.coords, {
-    color: color,
-    fillColor: color,
-    fillOpacity:0.8,
-    radius:8
-  }).addTo(map);
+function addCategory(){
 
-  marker.bindPopup(c.name);
+let name=document.getElementById("newCategory").value
 
-  marker.on("click", function(){
-    visitedCountries[c.name] = true;
-    localStorage.setItem("visitedCountries", JSON.stringify(visitedCountries));
-    marker.setStyle({color:"gray", fillColor:"gray"});
-  });
-});
+let cats=JSON.parse(localStorage.getItem("cats"))||{}
 
-// Albums photos
-let albums = JSON.parse(localStorage.getItem("albums")) || {};
+cats[name]=[]
 
-// Ajouter un pays
-function addCountry(){
-  let country = prompt("Nom du pays :");
-  if(!country) return;
-  if(!albums[country]) albums[country] = {};
-  saveAlbums();
-  renderAlbums();
+localStorage.setItem("cats",JSON.stringify(cats))
+
+loadCategories()
+
 }
 
-// Ajouter une ville à un pays
-function addCity(country){
-  let city = prompt("Nom de la ville :");
-  if(!city) return;
-  if(!albums[country][city]) albums[country][city] = [];
-  saveAlbums();
-  renderAlbums();
+
+
+function addSub(){
+
+let parent=document.getElementById("parentCategory").value
+
+let sub=document.getElementById("newSub").value
+
+let cats=JSON.parse(localStorage.getItem("cats"))
+
+cats[parent].push(sub)
+
+localStorage.setItem("cats",JSON.stringify(cats))
+
+loadCategories()
+
 }
 
-// Ajouter une photo
-function addPhoto(country, city){
-  let url = prompt("URL de la photo :");
-  if(!url) return;
-  albums[country][city].push(url);
-  saveAlbums();
-  renderAlbums();
+
+
+function loadCategories(){
+
+let cats=JSON.parse(localStorage.getItem("cats"))||{}
+
+let ul=document.getElementById("categories")
+
+let select=document.getElementById("parentCategory")
+
+ul.innerHTML=""
+
+select.innerHTML=""
+
+for(let c in cats){
+
+let li=document.createElement("li")
+
+li.innerHTML="<b>"+c+"</b>"
+
+ul.appendChild(li)
+
+let opt=document.createElement("option")
+
+opt.value=c
+
+opt.innerText=c
+
+select.appendChild(opt)
+
+cats[c].forEach(s=>{
+
+let sub=document.createElement("li")
+
+sub.innerText=" - "+s
+
+ul.appendChild(sub)
+
+})
+
 }
 
-// Sauvegarder
-function saveAlbums(){
-  localStorage.setItem("albums", JSON.stringify(albums));
 }
 
-// Afficher les albums
-function renderAlbums(){
-  let container = document.getElementById("albumGrid");
-  container.innerHTML = "";
 
-  for(let country in albums){
-    for(let city in albums[country]){
-      albums[country][city].forEach(url=>{
-        let img = document.createElement("img");
-        img.src = url;
-        img.alt = `${city}, ${country}`;
-        container.appendChild(img);
-      });
-    }
-  }
+
+/* CARTE */
+
+function initMap(){
+
+let map=L.map('map').setView([20,0],2)
+
+L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map)
+
+let visited=JSON.parse(localStorage.getItem("visited"))||[]
+
+map.on("click",function(e){
+
+let lat=e.latlng.lat
+
+let lng=e.latlng.lng
+
+visited.push([lat,lng])
+
+localStorage.setItem("visited",JSON.stringify(visited))
+
+L.circle([lat,lng],{
+
+radius:500000,
+
+color:"grey",
+
+fillColor:"grey",
+
+fillOpacity:0.5
+
+}).addTo(map)
+
+})
+
+visited.forEach(v=>{
+
+L.circle(v,{
+
+radius:500000,
+
+color:"grey",
+
+fillColor:"grey",
+
+fillOpacity:0.5
+
+}).addTo(map)
+
+})
+
 }
 
-// Initial render
-renderAlbums();
 
-// Concerts
-let concerts = JSON.parse(localStorage.getItem("concerts")) || [];
 
-function addConcert(){
-  let concert = prompt("Nom du concert :");
-  if(!concert) return;
-  concerts.push(concert);
-  localStorage.setItem("concerts", JSON.stringify(concerts));
-  renderConcerts();
+/* MEDIA */
+
+function addMedia(){
+
+let input=document.createElement("input")
+
+input.type="file"
+
+input.accept="image/*,video/*"
+
+input.onchange=e=>{
+
+let file=e.target.files[0]
+
+let reader=new FileReader()
+
+reader.onload=function(){
+
+let media=JSON.parse(localStorage.getItem("media"))||[]
+
+media.push(reader.result)
+
+localStorage.setItem("media",JSON.stringify(media))
+
+loadGallery()
+
 }
 
-function renderConcerts(){
-  let container = document.getElementById("concertList");
-  container.innerHTML = "";
-  concerts.forEach(c=>{
-    let div = document.createElement("div");
-    div.textContent = c;
-    container.appendChild(div);
-  });
+reader.readAsDataURL(file)
+
 }
 
-renderConcerts();
+input.click()
+
+}
+
+
+
+function loadGallery(){
+
+let gallery=document.getElementById("gallery")
+
+gallery.innerHTML=""
+
+let media=JSON.parse(localStorage.getItem("media"))||[]
+
+media.forEach((m,i)=>{
+
+let div=document.createElement("div")
+
+div.className="media"
+
+let del=document.createElement("button")
+
+del.className="delete"
+
+del.innerText="X"
+
+del.onclick=()=>deleteMedia(i)
+
+if(m.includes("video")){
+
+let v=document.createElement("video")
+
+v.src=m
+
+v.controls=true
+
+div.appendChild(v)
+
+}else{
+
+let img=document.createElement("img")
+
+img.src=m
+
+div.appendChild(img)
+
+}
+
+div.appendChild(del)
+
+gallery.appendChild(div)
+
+})
+
+}
+
+
+
+function deleteMedia(i){
+
+let media=JSON.parse(localStorage.getItem("media"))
+
+media.splice(i,1)
+
+localStorage.setItem("media",JSON.stringify(media))
+
+loadGallery()
+
+}
